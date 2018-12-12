@@ -5,7 +5,7 @@
 #include <map>
 #include <random>
 
-#include "engine.hpp"
+#include "KMCBackend.hpp"
 
 Simulator::Simulator(double *_cell, double *_basis, int _nbasis, \
   double _radius, double _jump, double _bond, double *_force, double _penalty) {

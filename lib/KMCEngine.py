@@ -5,7 +5,7 @@ import numpy as np
 from numpy.ctypeslib import ndpointer
 
 class KMCEngine:
-    def __init__(self,name="c++/libsim.so",\
+    def __init__(self,name="lib/libkmcsim.so",\
             cell=np.ones(2),basis=np.zeros((1,2)),radius=1.,\
             jump=1.0, bond=4.0,force=np.zeros(2),penalty=1.):
 
@@ -17,6 +17,7 @@ class KMCEngine:
                 c_int, c_double, c_double, c_double,\
                 ndpointer(c_double, flags="C_CONTIGUOUS"),\
                 c_double, c_void_p]
+
         self.kmclib.open_sim.restype = None
 
         self.kmclib.set_occupations.argtypes = [c_void_p,\
@@ -47,13 +48,20 @@ class KMCEngine:
         self.kmclib.run.argtypes = [c_void_p, c_uint32, c_bool]
         self.kmclib.run.restype = None
 
-        self.kmclib.open_sim(cell,basis.flatten(),basis.shape[0],radius,\
-                    jump, bond, force, penalty, byref(self.sim))
-        print jump
+        self.kmclib.open_sim(cell.flatten(), basis.flatten(), basis.shape[0], \
+                            radius, jump, bond, force, penalty, byref(self.sim))
+
         self.built = False
         self.now = time.time()
+        self.unit_cell = cell
+        self.unit_basis = basis
+        self.super_cell = np.zeros(2)
 
-
+        self.force = force
+        self.jump = jump
+        self.bond = bond
+        self.penalty = penalty
+        self.radius = radius
 
     def build(self,xsize=10,ysize=None):
         if ysize is None:
@@ -62,6 +70,8 @@ class KMCEngine:
         self.nsites = self.kmclib.nsites(self.sim)
         self.start_time = 0.
         self.time = 0.
+        self.super_cell[0] = self.unit_cell[0] * int(xsize/self.unit_cell[0])
+        self.super_cell[1] = self.unit_cell[1] * int(ysize/self.unit_cell[1])
         self.built = True
 
     def get_time(self):
