@@ -7,7 +7,7 @@ from KMCEngine import KMCEngine
 from lattice_models import lattice_model
 from plotter import run_and_plot
 
-lat = lattice_model("fcc")
+lat = lattice_model("graphene")
 
 cycles = 400
 steps_per_cycle = 2000

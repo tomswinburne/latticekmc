@@ -5,7 +5,7 @@ import numpy as np
 from numpy.ctypeslib import ndpointer
 
 class KMCEngine:
-    def __init__(self,name="lib/libkmcsim.so",\
+    def __init__(self,name="lib/c++/libkmcsim.so",\
             cell=np.ones(2),basis=np.zeros((1,2)),radius=1.,\
             jump=1.0, bond=4.0,force=np.zeros(2),penalty=1.):
 

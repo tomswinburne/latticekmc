@@ -1,5 +1,5 @@
 arx/*
 lib/*.pyc
-lib/*.so
-lib/*.o
+lib/c++/*.so
+lib/c++/*.o
 data/*
