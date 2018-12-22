@@ -4,19 +4,43 @@ from ctypes import *
 import numpy as np
 from numpy.ctypeslib import ndpointer
 
+def max_neighbours(R,basis,cell):
+    # Find maximum number of sites in circle of radius R
+    # To scan unit cell, need to make a square of side > 2R+cell_side
+    sites = basis.copy()
+    reps = [int(np.ceil(R/cell[0])),int(np.ceil(R/cell[1]))]
+    i=0
+    for rx in np.arange(-reps[0],reps[0]+1):
+        for ry in np.arange(-reps[1],reps[1]+1):
+            if rx==0 and ry==0:
+                continue
+            temp = basis.copy()
+            temp[:,0] += rx*cell[0]
+            temp[:,1] += ry*cell[1]
+            sites = np.vstack((sites,temp))
+            i+=1
+    # go through basis atoms and take largest nn count
+    nnc = 0
+    for b in basis:
+        nnc = max((np.linalg.norm(sites-b,axis=1)<R).sum()-1,nnc)
+    return nnc
+
+
+
 class KMCEngine:
-    def __init__(self,name="lib/c++/libkmcsim.so",\
-            cell=np.ones(2),basis=np.zeros((1,2)),radius=1.,\
-            jump=1.0, bond=4.0,force=np.zeros(2),penalty=1.):
+    def __init__(self,cell=np.ones(2), \
+                      basis=np.zeros((1,2)), radius=1.1, \
+                      barriers=np.ones((5,5)), energies=-np.arange(5),\
+                      force = np.zeros(2),name="lib/c++/libkmcsim.so"):
 
         self.sim = c_void_p()
         self.kmclib = cdll.LoadLibrary(name)
+
         self.kmclib.open_sim.argtypes = [\
                 ndpointer(c_double, flags="C_CONTIGUOUS"),\
+                ndpointer(c_double, flags="C_CONTIGUOUS"), c_uint, c_double,\
                 ndpointer(c_double, flags="C_CONTIGUOUS"),\
-                c_int, c_double, c_double, c_double,\
-                ndpointer(c_double, flags="C_CONTIGUOUS"),\
-                c_double, c_void_p]
+                c_uint, ndpointer(c_double, flags="C_CONTIGUOUS"), c_void_p]
 
         self.kmclib.open_sim.restype = None
 
@@ -48,8 +72,9 @@ class KMCEngine:
         self.kmclib.run.argtypes = [c_void_p, c_uint32, c_bool]
         self.kmclib.run.restype = None
 
+        ebar = np.hstack((barriers.flatten(),energies.flatten()))
         self.kmclib.open_sim(cell.flatten(), basis.flatten(), basis.shape[0], \
-                            radius, jump, bond, force, penalty, byref(self.sim))
+                        radius,ebar, energies.shape[0], force, byref(self.sim))
 
         self.built = False
         self.now = time.time()
@@ -58,9 +83,8 @@ class KMCEngine:
         self.super_cell = np.zeros(2)
 
         self.force = force
-        self.jump = jump
-        self.bond = bond
-        self.penalty = penalty
+        self.barriers = barriers
+        self.energies = energies
         self.radius = radius
 
     def build(self,xsize=10,ysize=None):

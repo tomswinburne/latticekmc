@@ -34,8 +34,8 @@ struct rate
 class Simulator {
 public:
 
-  Simulator(double *_cell, double *_basis, int _nbasis, double _radius,\
-            double _jump, double _bond, double *_force, double _penalty);
+  Simulator(double *_cell, double *_basis, unsigned _nbasis, double _radius, \
+            double *baren, unsigned nn, double *_force);
 
   void build_neighbour_list();
 
@@ -50,8 +50,6 @@ public:
 
   double get_time();
 
-  double barrier_function(unsigned nni, unsigned nnj);
-
   double rate_function(unsigned i, unsigned j);
 
   double build_rates(std::vector< rate > &rates);
@@ -63,11 +61,16 @@ public:
   void run(unsigned steps, bool restart, unsigned seed);
 
   bool built,occupied;
-  unsigned ncells[2], nsites, nbasis, sim_steps;
-  double cell[2], force[2], penaltyE, jumpE, bondE, radius,sim_time;
-  std::vector<double> basis, jvec, positions;
-  std::vector<unsigned int> nnv,nlist_size;
-  std::vector<bool> occupation;
-  std::set<unsigned int> mobile;
+  unsigned ncells[2], nsites, nbasis, sim_steps, nstates;
+  double cell[2], force[2], radius, sim_time, bondE;
+
+  double *positions, *energies, *barriers, *basis;
+  unsigned *nnl;
+
+  std::vector<double>  jvec;
+  unsigned *nncount, *nlist_size;
+  bool *occupation;
+  std::set<unsigned> mobile;
   std::vector< std::vector< neighbor_site > > nlist;
+
 };
