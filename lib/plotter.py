@@ -2,8 +2,9 @@ import sys,time
 import numpy as np
 import matplotlib.pyplot as plt
 
-def run_and_plot(sim,cycles=1000,steps_per_cycle=1000,snapshots=10,lines=None,\
-        image_file=None,occupation_file=None,traj_file=None,cluster_file=None):
+def run_and_plot( sim,cycles=1000, steps_per_cycle=1000, snapshotsevery=100, \
+                  lines=None, image_file=None, occupation_file=None, \
+                  traj_file=None, cluster_file=None):
 
         """ lattice positions used throughout """
         pos = sim.get_positions()
@@ -83,7 +84,7 @@ def run_and_plot(sim,cycles=1000,steps_per_cycle=1000,snapshots=10,lines=None,\
                     (100*steps_per_cycle,time.time()-now,cyc+1,cycles)
                 now = time.time()
 
-            if cyc % (cycles/snapshots)==0:
+            if cyc % snapshotsevery==0:
                 print "Made Snapshot"
                 nnv = sim.get_neigh_count().flatten()[~occ].reshape((-1,1))
                 cluster_nnv.append(np.hstack((pos[~occ],nnv)))
@@ -115,7 +116,7 @@ def run_and_plot(sim,cycles=1000,steps_per_cycle=1000,snapshots=10,lines=None,\
         else:
             _traj = np.vstack((ftraj,traj))
 
-        ax.scatter(_traj[:,1],_traj[:,2],c='k',s=4)
+        ax.scatter(_traj[:,1],_traj[:,2],c=(0.8,0.8,0.8,1.0),s=4)
 
         if ctraj is None:
             ctraj = cluster_nnv[0]

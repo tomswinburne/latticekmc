@@ -62,7 +62,7 @@ public:
 
   bool built,occupied;
   unsigned ncells[2], nsites, nbasis, sim_steps, nstates;
-  double cell[2], force[2], radius, sim_time, bondE;
+  double cell[2], force[2], radius, sim_time, bondE, supercell[2];
 
   double *positions, *energies, *barriers, *basis;
   unsigned *nnl;

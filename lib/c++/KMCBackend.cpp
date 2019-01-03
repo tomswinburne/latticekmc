@@ -104,6 +104,8 @@ void Simulator::build(int xsize,int ysize){
   ncells[0] = int(xsize/cell[0]);
   ncells[1] = int(ysize/cell[1]);
   nsites = ncells[0] * ncells[1] * nbasis;
+  supercell[0] = 1.0*cell[0]*double(ncells[0]);
+  supercell[1] = 1.0*cell[1]*double(ncells[1]);
 
   positions = new double[2*nsites];
   // MUCH faster to hardcode this list
@@ -150,39 +152,40 @@ double Simulator::get_time(){
 
 double Simulator::rate_function(unsigned i, unsigned j) {
 
+  unsigned in,jn;
   double dx, barrier, dE; // dE = final-intial
 
   // Just the onsite considerations- destination has one less neighbor
+  dE = energies[nncount[j]-1] - energies[nncount[i]] ;
 
-  // site of ni bonds to nj bonds: dbond = nj-ni + 1.*nj - 1.*ni
-  dE = 2.0*bondE*(double(nncount[j]-1)-double(nncount[i]));
-
-  /*
-  bool found;
   // all neighbors of i that are not neighbors of j lose a bond after the jump
   for (in=nstates*i; nnl[in]<nsites; in++) if(occupation[nnl[in]]) {
-    found = false;
-    for(jn=nstates*j; nnl[jn]<nsites; jn++)
-      if ((nnl[jn]==nnl[in]) && occupation[nnl[jn]]) found=true;
-    if(!found) dE += double(nncount[nnl[in]]-1)-double(nncount[nnl[in]]);
+    for(jn=nstates*j; nnl[jn]<nsites; jn++) if(nnl[jn]==nnl[in]) break;
+    if(nnl[jn]==nsites)
+      dE += energies[nncount[nnl[in]]-1] - energies[nncount[nnl[in]]];
   }
-
 
   // all neighbors of j that are not neighbors of i gain a bond after the jump
   for (jn=nstates*j; nnl[jn]<nsites;jn++) if(occupation[nnl[jn]]) {
-    found = false;
-    for (in=nstates*i; nnl[in]<nsites; in++)
-      if ((nnl[jn]==nnl[in]) && occupation[nnl[in]]) found=true;
-    if (!found) dE += double(nncount[nnl[jn]]+1)-double(nncount[nnl[jn]]);
+    for (in=nstates*i; nnl[in]<nsites; in++) if(nnl[jn]==nnl[in]) break;
+    if(nnl[in]==nsites)
+      dE += energies[nncount[nnl[jn]]+1] - energies[nncount[nnl[jn]]];
   }
+  
+  /*
+  for(in=nstates*i;nnl[in]<nsites;in++)
+    for(jn=nstates*j;nnl[jn]<nsites;jn++)
+      if(nnl[jn]!=nnl[in]) {
+        dE += double(occupation[nnl[in]]) * (energies[nncount[nnl[in]]-1] - energies[nncount[nnl[in]]]);
+        dE += double(occupation[nnl[jn]]) * (energies[nncount[nnl[jn]]+1] - energies[nncount[nnl[jn]]]);
+      }
   */
-
   // barrier matrix
   barrier = barriers[nncount[i]*nstates+nncount[j]-1];
 
   for(int k=0;k<2;k++) {
     dx = positions[2*j+k]-positions[2*i+k];
-    dx -= round(dx/cell[k]/ncells[k])*cell[k]*ncells[k];
+    dx -= round(dx/supercell[k])*supercell[k];
     dE += -force[k] * dx;
     barrier += -0.5 * force[k] * dx;
   }
@@ -194,12 +197,11 @@ double Simulator::build_rates(std::vector< rate > &rates) {
   rate rate;
   double total_rate = 0.;
   unsigned ni,k;
-
   rates.clear();
   for (auto mi:mobile) {
     for(k=0;k<nstates-1;k++) {//ni=nstates*mi+k;nnl[ni]!=nsites;ni++) {
       ni=nstates*mi+k;
-      if (occupation[nnl[ni]]) continue;
+      if(occupation[nnl[ni]]) continue;
       rate.i = mi;
       rate.j = nnl[ni];
       rate.k = rate_function(mi,nnl[ni]);

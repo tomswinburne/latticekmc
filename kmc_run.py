@@ -45,11 +45,12 @@ max_nn = max_neighbours(radius,basis,cell)
 bondE = 4.0 # in kT
 jumpE = 1.0 # in kT
 strength = .75 # in kT / length
-theta =  np.pi / 8.0
+theta = 0. # np.pi / 8.0
 
 
 stateEn = -bondE * np.linspace(0.,1.*max_nn,max_nn+1,endpoint=True)
-#stateEn[0] = 6.0
+
+stateEn[0] = 6.0
 print stateEn
 jumpMat = jumpE * np.ones((max_nn+1,max_nn+1))
 # needs to be symmetric for detailed balance!
