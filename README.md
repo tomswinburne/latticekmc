@@ -1,4 +1,5 @@
-(c) Tom Swinburne 2019 swinburne at cinam.univ-mrs.fr
+:copyright: Tom Swinburne 2019
+swinburne at cinam.univ-mrs.fr
 Simple lattice KMC implementation for surface migration studies
 - Simple python front end for easy prototyping
 - C++ backend for reasonably fast execution
