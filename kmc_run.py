@@ -47,7 +47,6 @@ jumpE = 1.0 # in kT
 strength = .75 # in kT / length
 theta = 0. # np.pi / 8.0
 
-
 stateEn = -bondE * np.linspace(0.,1.*max_nn,max_nn+1,endpoint=True)
 
 stateEn[0] = 6.0
