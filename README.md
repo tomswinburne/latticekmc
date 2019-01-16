@@ -19,3 +19,7 @@ make
 python kmc_run.py
 ```
 
+# TODO
+- Caching bonding environments and rates for faster execution
+- Distance-dependent / many-body bonding energies
+- 3D...
